@@ -1,0 +1,51 @@
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { ProductContext } from "../context/ProductContext";
+import { CartContext } from "../context/CartContext";
+import Header from "../components/Header";
+import styles from "./Dashboard.module.css";
+
+export default function Dashboard() {
+  const { products } = useContext(ProductContext);
+  const { addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
+
+  return (
+    <main>
+      <Header />
+
+      <div className={styles.pageContainer}>
+        <h1 className={styles.title}>Our Items</h1>
+
+        <div className={styles.grid}>
+          {products.map((item) => (
+            <div
+              className={styles.card}
+              key={item.id}
+              onClick={() => navigate(`/product/${item.id}`)}
+            >
+              <img
+                src={item.image}
+                alt={item.name}
+                className={styles.image}
+              />
+
+              <h3>{item.name}</h3>
+              <p>${item.price}</p>
+
+              <button
+                className={styles.btn}
+                onClick={(e) => {
+                  e.stopPropagation(); // stops navigation when clicking Add to Cart
+                  addToCart(item);
+                }}
+              >
+                Add to Cart
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
