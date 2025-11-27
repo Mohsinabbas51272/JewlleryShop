@@ -6,7 +6,7 @@ import Header from "../components/Header";
 import styles from "./Dashboard.module.css";
 
 export default function Dashboard() {
-  const { products } = useContext(ProductContext);
+  const { products,loading } = useContext(ProductContext);
   const { addToCart } = useContext(CartContext);
   const navigate = useNavigate();
 
@@ -17,7 +17,12 @@ export default function Dashboard() {
       <div className={styles.pageContainer}>
         <h1 className={styles.title}>Our Items</h1>
 
-        <div className={styles.grid}>
+        {loading ? ( 
+          <div className={styles.loader}></div>
+        ): products.length === 0 ? (
+  <p>No products yet.</p>
+): (
+          <div className={styles.grid}>
           {products.map((item) => (
             <div
               className={styles.card}
@@ -44,7 +49,8 @@ export default function Dashboard() {
               </button>
             </div>
           ))}
-        </div>
+          
+        </div>)}
       </div>
     </main>
   );

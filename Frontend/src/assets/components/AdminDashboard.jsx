@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./AdminDashboard.module.css";
 
 export default function AdminDashboard() {
-  const { products, addProduct, deleteProduct } = useContext(ProductContext);
+  const { products, loading, addProduct, deleteProduct } = useContext(ProductContext);
   const { orders, updateOrderStatus } = useContext(OrderContext);
   const navigate = useNavigate();
 
@@ -14,19 +14,26 @@ export default function AdminDashboard() {
     price: "",
     image: "",
     description: "",
+    file: null,
   });
 
-  const handleAddProduct = () => {
+  // Add product using context
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price) {
       alert("Name & Price are required!");
       return;
     }
-    addProduct({ ...newProduct, price: Number(newProduct.price) });
-    setNewProduct({ name: "", price: "", image: "", description: "" });
+    try {
+      await addProduct(newProduct); // context handles fetch & state
+      setNewProduct({ name: "", price: "", image: "", description: "", file: null });
+    } catch (err) {
+      console.error("Error adding product:", err);
+    }
   };
 
+  // Delete product
   const handleDeleteProduct = (id, e) => {
-    e.stopPropagation(); // Prevent navigating to product detail
+    e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this product?")) {
       deleteProduct(id);
     }
@@ -42,31 +49,27 @@ export default function AdminDashboard() {
         <input
           placeholder="Name"
           value={newProduct.name}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, name: e.target.value })
-          }
+          onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
         />
         <input
           placeholder="Price"
           type="number"
           value={newProduct.price}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, price: e.target.value })
-          }
+          onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
         />
         <input
           placeholder="Image URL"
           value={newProduct.image}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, image: e.target.value })
-          }
+          onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+        />
+        <input
+          type="file"
+          onChange={(e) => setNewProduct({ ...newProduct, file: e.target.files[0] })}
         />
         <textarea
           placeholder="Description"
           value={newProduct.description}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, description: e.target.value })
-          }
+          onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
         ></textarea>
         <button onClick={handleAddProduct}>Add Product</button>
       </section>
@@ -74,7 +77,9 @@ export default function AdminDashboard() {
       {/* Products List */}
       <section className={styles.productList}>
         <h2>Products</h2>
-        {products.length === 0 ? (
+        {loading ? (
+          <div className={styles.loader}></div>
+        ) : products.length === 0 ? (
           <p>No products yet.</p>
         ) : (
           <div className={styles.grid}>
@@ -88,8 +93,6 @@ export default function AdminDashboard() {
                 <img src={item.image} alt={item.name} className={styles.image} />
                 <h3>{item.name}</h3>
                 <p>${item.price}</p>
-
-                {/* Delete Button */}
                 <button
                   className={styles.deleteBtn}
                   onClick={(e) => handleDeleteProduct(item.id, e)}
@@ -111,6 +114,7 @@ export default function AdminDashboard() {
           <table>
             <thead>
               <tr>
+                <th>Products</th>
                 <th>Order ID</th>
                 <th>Total</th>
                 <th>Status</th>
@@ -118,24 +122,34 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order.id}</td>
-                  <td>${order.total}</td>
-                  <td>{order.status}</td>
-                  <td>
-                    {order.status === "Pending" && (
-                      <button
-                        onClick={() =>
-                          updateOrderStatus(order.id, "Delivered")
-                        }
-                      >
-                        Mark Delivered
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {orders.map((order) => {
+                let productNames = "No items";
+                if (order.items) {
+                  try {
+                    const productsInOrder = JSON.parse(order.items);
+                    productNames = productsInOrder
+                      .map((p) => (p.quantity ? `${p.name} x${p.quantity}` : p.name))
+                      .join(", ");
+                  } catch {
+                    productNames = "Invalid items";
+                  }
+                }
+                return (
+                  <tr key={order.id}>
+                    <td>{productNames}</td>
+                    <td>{order.id}</td>
+                    <td>${order.total}</td>
+                    <td>{order.status}</td>
+                    <td>
+                      {order.status === "Pending" && (
+                        <button onClick={() => updateOrderStatus(order.id, "Delivered")}>
+                          Mark Delivered
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

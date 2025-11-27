@@ -13,8 +13,14 @@ export default function AdminProductDetails() {
   if (!product) return <h2>Product not found</h2>;
 
   const handleDelete = () => {
-    deleteProduct(product.id);
-    navigate("/admin");
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      deleteProduct(product.id);
+      navigate("/admin-dashboard");
+    }
+  };
+
+  const handleEdit = () => {
+    navigate(`/admin/product/edit/${product.id}`);
   };
 
   return (
@@ -22,15 +28,24 @@ export default function AdminProductDetails() {
       <h1>Product Details</h1>
 
       <div className={styles.card}>
-        <img src={product.image} alt={product.name} className={styles.image} />
+        <img
+          src={product.image}
+          alt={product.name}
+          className={styles.image}
+        />
 
         <h2>{product.name}</h2>
-        <p>${product.price}</p>
-        <p>{product.description}</p>
+        <p className={styles.price}>${product.price}</p>
+        <p className={styles.description}>{product.description}</p>
 
-        <button className={styles.deleteBtn} onClick={handleDelete}>
-          Delete Product
-        </button>
+        <div className={styles.buttons}>
+          <button className={styles.editBtn} onClick={handleEdit}>
+            Edit Product
+          </button>
+          <button className={styles.deleteBtn} onClick={handleDelete}>
+            Delete Product
+          </button>
+        </div>
       </div>
     </div>
   );
