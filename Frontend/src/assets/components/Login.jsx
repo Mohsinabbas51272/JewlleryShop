@@ -32,13 +32,26 @@ export default function Login() {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (validate()) {
-      // Normally, you check user credentials here
+  if (validate()) {
+    // Check for hardcoded admin credentials
+    if (form.email === "mohsin@admin.com" && form.password === "112233") {
+      navigate("/admin-dashboard"); // Navigate to admin dashboard
+    } else {
       navigate("/dashboard");
     }
-  };
+  }
+};
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+
+  //   if (validate()) {
+  //     // Normally, you check user credentials here
+  //     navigate("/dashboard");
+  //   }
+  // };
 
   return (
     <div className={styles.container}>
