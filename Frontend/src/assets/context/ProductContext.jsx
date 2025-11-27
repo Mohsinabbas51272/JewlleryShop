@@ -12,7 +12,7 @@ export const ProductProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/products");
+      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/products");
       if (!res.ok) throw new Error("Failed to fetch products");
       const data = await res.json();
       setProducts(data); // REPLACE instead of appending to prevent duplicates
@@ -44,7 +44,7 @@ export const ProductProvider = ({ children }) => {
         formData.append("imageUrl", product.image);
       }
 
-      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/products", {
+      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/products", {
         method: "POST",
         body: formData,
       });
@@ -70,7 +70,7 @@ export const ProductProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/products/${id}`, {
+      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/products/${id}`, {
         method: "DELETE",
       });
 

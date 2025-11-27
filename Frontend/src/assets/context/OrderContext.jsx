@@ -14,7 +14,7 @@ export const OrderProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders");
+      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/orders");
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       setOrders(data);
@@ -45,7 +45,7 @@ export const OrderProvider = ({ children }) => {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders/${Number(id)}`, {
+      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/orders/${Number(id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -73,7 +73,7 @@ export const OrderProvider = ({ children }) => {
   // Delete order
   const deleteOrder = async (id) => {
     try {
-      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders/${Number(id)}`, {
+      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/orders/${Number(id)}`, {
         method: "DELETE",
       });
 
