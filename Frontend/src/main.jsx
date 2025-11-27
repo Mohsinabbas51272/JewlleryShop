@@ -7,6 +7,7 @@ import {  CartProvider } from './assets/context/CartContext.jsx'
 import { ProductProvider } from './assets/context/ProductContext.jsx'
 import { OrderContext, OrderProvider } from './assets/context/OrderContext.jsx'
 createRoot(document.getElementById('root')).render(
+ <StrictMode>
  <ProductProvider>
   <OrderProvider>
  <CartProvider>
@@ -14,4 +15,5 @@ createRoot(document.getElementById('root')).render(
   </CartProvider>
   </OrderProvider>
   </ProductProvider>
+  </StrictMode>
 )
