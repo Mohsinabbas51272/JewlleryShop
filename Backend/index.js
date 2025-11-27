@@ -7,14 +7,13 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
-const PORT = 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve upload files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Create uploads folder if not exists
+// Create uploads folder
 if (!fs.existsSync("./uploads")) fs.mkdirSync("./uploads");
 
 // Multer setup
@@ -25,11 +24,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// SQLite connection
-const db = new sqlite3.Database("./store.db", (err) => {
-  if (err) console.error(err.message);
-  else console.log("Connected to SQLite database.");
-});
+// SQLite DB
+const db = new sqlite3.Database("./store.db");
 
 // Create tables
 db.serialize(() => {
@@ -54,25 +50,24 @@ db.serialize(() => {
 });
 
 // ===============================
-// 🚀 API ROUTES START WITH /api/
+// 🚀 ALL ROUTES MUST START WITH /api
 // ===============================
 
-// GET all products
-app.get("/products", (req, res) => {
+// GET products
+app.get("/api/products", (req, res) => {
   db.all("SELECT * FROM products", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-// ADD product (file or URL)
-app.post("/products", upload.single("file"), (req, res) => {
+// ADD product
+app.post("/api/products", upload.single("file"), (req, res) => {
   const { name, price, description, imageUrl } = req.body;
 
   if (!name || !price)
     return res.status(400).json({ message: "Name & Price required" });
 
-  // Generate correct image path (works on Vercel)
   let image = "";
   if (req.file) {
     image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
@@ -92,36 +87,33 @@ app.post("/products", upload.single("file"), (req, res) => {
 });
 
 // DELETE product
-app.delete("/products/:id", (req, res) => {
+app.delete("/api/products/:id", (req, res) => {
   const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ message: "Invalid product ID" });
 
   db.run("DELETE FROM products WHERE id = ?", [id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     if (this.changes === 0)
       return res.status(404).json({ message: "Product not found" });
 
-    res.json({ message: "Product deleted successfully", id });
+    res.json({ message: "Product deleted", id });
   });
 });
 
 // ===============================
-// ORDER ROUTES
+// ORDERS
 // ===============================
 
-// GET all orders
-app.get("/orders", (req, res) => {
-  db.all("SELECT * FROM orders", [], (err, rows) => {
+// GET orders
+app.get("/api/orders", (req, res) => {
+  db.all("SELECT * OF orders", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
 // ADD order
-app.post("/orders", (req, res) => {
+app.post("/api/orders", (req, res) => {
   const { items, total } = req.body;
-  if (!items || !total)
-    return res.status(400).json({ message: "Items & total required" });
 
   db.run(
     "INSERT INTO orders (items, total) VALUES (?, ?)",
@@ -134,21 +126,16 @@ app.post("/orders", (req, res) => {
   );
 });
 
-// UPDATE order status
-app.put("/orders/:id", (req, res) => {
-  const id = Number(req.params.id);
+// UPDATE order
+app.put("/api/orders/:id", (req, res) => {
   const { status } = req.body;
-
-  if (!status) return res.status(400).json({ message: "Status required" });
+  const id = req.params.id;
 
   db.run(
-    "UPDATE orders SET status = ? WHERE id = ?",
+    "UPDATE orders SET status=? WHERE id=?",
     [status, id],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      if (this.changes === 0)
-        return res.status(404).json({ message: "Order not found" });
-
       res.json({ message: "Order updated", id, status });
     }
   );
@@ -156,19 +143,14 @@ app.put("/orders/:id", (req, res) => {
 
 // DELETE order
 app.delete("/api/orders/:id", (req, res) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ message: "Invalid order ID" });
+  const id = req.params.id;
 
-  db.run("DELETE FROM orders WHERE id = ?", [id], function (err) {
+  db.run("DELETE FROM orders WHERE id=?", [id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0)
-      return res.status(404).json({ message: "Order not found" });
-
-    res.json({ message: "Order deleted successfully", id });
+    res.json({ message: "Order deleted", id });
   });
 });
 
-// Start server (local only)
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+
+
+module.exports = app;
