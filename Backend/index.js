@@ -58,7 +58,7 @@ db.serialize(() => {
 // ===============================
 
 // GET all products
-app.get("/api/products", (req, res) => {
+app.get("/products", (req, res) => {
   db.all("SELECT * FROM products", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
@@ -66,7 +66,7 @@ app.get("/api/products", (req, res) => {
 });
 
 // ADD product (file or URL)
-app.post("/api/products", upload.single("file"), (req, res) => {
+app.post("/products", upload.single("file"), (req, res) => {
   const { name, price, description, imageUrl } = req.body;
 
   if (!name || !price)
@@ -92,7 +92,7 @@ app.post("/api/products", upload.single("file"), (req, res) => {
 });
 
 // DELETE product
-app.delete("/api/products/:id", (req, res) => {
+app.delete("/products/:id", (req, res) => {
   const id = Number(req.params.id);
   if (isNaN(id)) return res.status(400).json({ message: "Invalid product ID" });
 
@@ -110,7 +110,7 @@ app.delete("/api/products/:id", (req, res) => {
 // ===============================
 
 // GET all orders
-app.get("/api/orders", (req, res) => {
+app.get("/orders", (req, res) => {
   db.all("SELECT * FROM orders", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
@@ -118,7 +118,7 @@ app.get("/api/orders", (req, res) => {
 });
 
 // ADD order
-app.post("/api/orders", (req, res) => {
+app.post("/orders", (req, res) => {
   const { items, total } = req.body;
   if (!items || !total)
     return res.status(400).json({ message: "Items & total required" });
@@ -135,7 +135,7 @@ app.post("/api/orders", (req, res) => {
 });
 
 // UPDATE order status
-app.put("/api/orders/:id", (req, res) => {
+app.put("/orders/:id", (req, res) => {
   const id = Number(req.params.id);
   const { status } = req.body;
 
