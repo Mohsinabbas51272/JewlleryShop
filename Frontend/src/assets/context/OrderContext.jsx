@@ -13,12 +13,18 @@ export const OrderProvider = ({ children }) => {
   const fetchOrders = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/orders");
+      const res = await fetch(
+        "https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders"
+      );
+
       if (!res.ok) throw new Error("Failed to fetch orders");
+
       const data = await res.json();
       setOrders(data);
     } catch (err) {
+      console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -29,7 +35,7 @@ export const OrderProvider = ({ children }) => {
     fetchOrders();
   }, []);
 
-  // Update order status (with delete if delivered)
+  // Update order
   const updateOrderStatus = async (id, newStatus) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
@@ -45,24 +51,29 @@ export const OrderProvider = ({ children }) => {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/orders/${Number(id)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const res = await fetch(
+        `https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders/${Number(
+          id
+        )}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to update order");
 
       if (newStatus === "Delivered") {
-        // Delete order after marking delivered
         await deleteOrder(id);
-        toast.success("Order delivered & removed successfully!");
+        toast.success("Order delivered & removed!");
       } else {
-        // Just update status in frontend
         setOrders((prev) =>
-          prev.map((o) => (o.id === Number(id) ? { ...o, status: newStatus } : o))
+          prev.map((o) =>
+            o.id === Number(id) ? { ...o, status: newStatus } : o
+          )
         );
-        toast.success(`Order status updated to ${newStatus}`);
+        toast.success(`Order updated to ${newStatus}`);
       }
     } catch (err) {
       console.error(err);
@@ -73,17 +84,20 @@ export const OrderProvider = ({ children }) => {
   // Delete order
   const deleteOrder = async (id) => {
     try {
-      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/orders/${Number(id)}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders/${Number(
+          id
+        )}`,
+        { method: "DELETE" }
+      );
 
       if (!res.ok) {
-        if (res.status === 404) throw new Error("Order not found on server");
+        if (res.status === 404) throw new Error("Order not found");
         throw new Error("Failed to delete order");
       }
 
       setOrders((prev) => prev.filter((o) => o.id !== Number(id)));
-      toast.success("Order deleted successfully!");
+      toast.success("Order deleted!");
     } catch (err) {
       console.error(err);
       toast.error(err.message);

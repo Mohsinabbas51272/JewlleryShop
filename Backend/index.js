@@ -8,15 +8,19 @@ const fs = require("fs");
 
 const app = express();
 
+// ---------------------
 // Middleware
-app.use(cors());
+// ---------------------
+app.use(cors({ origin: "*", methods: "GET,POST,PUT,DELETE" }));
 app.use(bodyParser.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Create uploads folder
+// Create uploads folder (for local only)
 if (!fs.existsSync("./uploads")) fs.mkdirSync("./uploads");
 
-// Multer setup
+// ---------------------
+// Multer Setup (images)
+// ---------------------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) =>
@@ -24,7 +28,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// ---------------------
 // SQLite DB
+// ---------------------
 const db = new sqlite3.Database("./store.db");
 
 // Create tables
@@ -49,11 +55,11 @@ db.serialize(() => {
   `);
 });
 
-// ===============================
-// 🚀 ALL ROUTES MUST START WITH /api
-// ===============================
+// =====================================================
+// PRODUCTS ROUTES
+// =====================================================
 
-// GET products
+// GET all products
 app.get("/api/products", (req, res) => {
   db.all("SELECT * FROM products", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -61,7 +67,7 @@ app.get("/api/products", (req, res) => {
   });
 });
 
-// ADD product
+// ADD new product
 app.post("/api/products", upload.single("file"), (req, res) => {
   const { name, price, description, imageUrl } = req.body;
 
@@ -69,10 +75,11 @@ app.post("/api/products", upload.single("file"), (req, res) => {
     return res.status(400).json({ message: "Name & Price required" });
 
   let image = "";
+
   if (req.file) {
     image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
   } else if (imageUrl) {
-    image = imageUrl;
+    image = imageUrl; // fallback for online images
   }
 
   db.run(
@@ -81,7 +88,13 @@ app.post("/api/products", upload.single("file"), (req, res) => {
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
 
-      res.json({ id: this.lastID, name, price, image, description });
+      res.json({
+        id: this.lastID,
+        name,
+        price,
+        image,
+        description,
+      });
     }
   );
 });
@@ -99,13 +112,13 @@ app.delete("/api/products/:id", (req, res) => {
   });
 });
 
-// ===============================
-// ORDERS
-// ===============================
+// =====================================================
+// ORDERS ROUTES
+// =====================================================
 
 // GET orders
 app.get("/api/orders", (req, res) => {
-  db.all("SELECT * OF orders", [], (err, rows) => {
+  db.all("SELECT * FROM orders", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
@@ -136,6 +149,7 @@ app.put("/api/orders/:id", (req, res) => {
     [status, id],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
+
       res.json({ message: "Order updated", id, status });
     }
   );
@@ -147,10 +161,9 @@ app.delete("/api/orders/:id", (req, res) => {
 
   db.run("DELETE FROM orders WHERE id=?", [id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
+
     res.json({ message: "Order deleted", id });
   });
 });
-
-
 
 module.exports = app;

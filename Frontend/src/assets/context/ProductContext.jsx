@@ -3,19 +3,24 @@ import { createContext, useState, useEffect } from "react";
 export const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
-  const [products, setProducts] = useState([]); // all products
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // --- Fetch all products from backend ---
+  // Fetch all products
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/products");
+      const res = await fetch(
+        "https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/products"
+      );
+
       if (!res.ok) throw new Error("Failed to fetch products");
+
       const data = await res.json();
-      setProducts(data); // REPLACE instead of appending to prevent duplicates
+      setProducts(data);
     } catch (err) {
       console.error("Error fetching products:", err);
       setError(err.message);
@@ -28,7 +33,7 @@ export const ProductProvider = ({ children }) => {
     fetchProducts();
   }, []);
 
-  // --- Add product (Admin) ---
+  // Add product
   const addProduct = async (product) => {
     try {
       setLoading(true);
@@ -44,19 +49,20 @@ export const ProductProvider = ({ children }) => {
         formData.append("imageUrl", product.image);
       }
 
-      const res = await fetch("https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/products", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/products",
+        {
+          method: "POST",
+          body: formData, // DO NOT send headers manually
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to add product");
       }
 
-      // After successful add, refetch all products from backend
-      await fetchProducts();
-
+      await fetchProducts(); // reload products after adding
     } catch (err) {
       console.error("Error adding product:", err);
       throw err;
@@ -65,25 +71,25 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  // --- Delete product (Admin) ---
+  // Delete product
   const deleteProduct = async (id) => {
     try {
       setLoading(true);
 
-      const res = await fetch(`https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/products/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/products/${id}`,
+        { method: "DELETE" }
+      );
 
       if (!res.ok) {
         if (res.status === 404) throw new Error("Product not found on server");
         throw new Error("Failed to delete product");
       }
 
-      // Remove from local state
+      // update UI instantly
       setProducts((prev) => prev.filter((p) => p.id !== id));
-
     } catch (err) {
-      console.error(`Error deleting product with id ${id}:`, err);
+      console.error("Delete product error:", err);
     } finally {
       setLoading(false);
     }
