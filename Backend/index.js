@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 // ⚠ On Vercel, SQLite cannot persist files permanently. For demo/testing use `/tmp/store.db`
 // const db = new sqlite3.Database("/tmp/store.db"); // ephemeral
 // For local testing you can still use "./store.db"
-const db = new sqlite3.Database("./store.db");
+const db = new sqlite3.Database("./temp/store.db");
 
 // Create tables
 db.serialize(() => {
