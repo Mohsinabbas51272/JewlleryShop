@@ -2,9 +2,6 @@ const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
 const app = express();
 
@@ -13,24 +10,13 @@ const app = express();
 // ---------------------
 app.use(cors({ origin: "*", methods: "GET,POST,PUT,DELETE" }));
 app.use(bodyParser.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Create uploads folder (for local only)
-if (!fs.existsSync("./uploads")) fs.mkdirSync("./uploads");
-
-// ---------------------
-// Multer Setup (images)
-// ---------------------
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) =>
-    cb(null, Date.now() + path.extname(file.originalname)),
-});
-const upload = multer({ storage });
 
 // ---------------------
 // SQLite DB
 // ---------------------
+// ⚠ On Vercel, SQLite cannot persist files permanently. For demo/testing use `/tmp/store.db`
+// const db = new sqlite3.Database("/tmp/store.db"); // ephemeral
+// For local testing you can still use "./store.db"
 const db = new sqlite3.Database("./store.db");
 
 // Create tables
@@ -67,20 +53,14 @@ app.get("/api/products", (req, res) => {
   });
 });
 
-// ADD new product
-app.post("/api/products", upload.single("file"), (req, res) => {
+// ADD new product (imageUrl only)
+app.post("/api/products", (req, res) => {
   const { name, price, description, imageUrl } = req.body;
 
   if (!name || !price)
     return res.status(400).json({ message: "Name & Price required" });
 
-  let image = "";
-
-  if (req.file) {
-    image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-  } else if (imageUrl) {
-    image = imageUrl; // fallback for online images
-  }
+  const image = imageUrl || "";
 
   db.run(
     "INSERT INTO products (name, price, image, description) VALUES (?, ?, ?, ?)",
