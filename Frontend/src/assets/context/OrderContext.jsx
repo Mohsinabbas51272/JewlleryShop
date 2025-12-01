@@ -9,15 +9,15 @@ export const OrderProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const BASE_URL = "http://localhost:5000/api"; // Local backend
+
   // Fetch all orders
   const fetchOrders = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(
-        "https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders"
-      );
+      const res = await fetch(`${BASE_URL}/orders`);
 
       if (!res.ok) throw new Error("Failed to fetch orders");
 
@@ -51,16 +51,11 @@ export const OrderProvider = ({ children }) => {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await fetch(
-        `https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders/${Number(
-          id
-        )}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
+      const res = await fetch(`${BASE_URL}/orders/${Number(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
       if (!res.ok) throw new Error("Failed to update order");
 
@@ -84,12 +79,9 @@ export const OrderProvider = ({ children }) => {
   // Delete order
   const deleteOrder = async (id) => {
     try {
-      const res = await fetch(
-        `https://backend-qnfdn1gj1-maarjojo99-makers-projects.vercel.app/api/orders/${Number(
-          id
-        )}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`${BASE_URL}/orders/${Number(id)}`, {
+        method: "DELETE",
+      });
 
       if (!res.ok) {
         if (res.status === 404) throw new Error("Order not found");

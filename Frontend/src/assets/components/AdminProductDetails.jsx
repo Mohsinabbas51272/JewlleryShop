@@ -23,13 +23,18 @@ export default function AdminProductDetails() {
     navigate(`/admin/product/edit/${product.id}`);
   };
 
+  // Fix image path: use full URL for local uploads
+  const imageUrl = product.image.startsWith("http")
+    ? product.image
+    : `http://localhost:5000${product.image}`;
+
   return (
     <div className={styles.container}>
       <h1>Product Details</h1>
 
       <div className={styles.card}>
         <img
-          src={product.image}
+          src={imageUrl}
           alt={product.name}
           className={styles.image}
         />

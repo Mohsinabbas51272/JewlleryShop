@@ -12,20 +12,36 @@ export default function AdminDashboard() {
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
-    image: "",
     description: "",
+    image: "",
     file: null,
   });
 
-  // Add product using context
+  const [previewImage, setPreviewImage] = useState(null);
+
+  // Handle file selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setNewProduct({ ...newProduct, file });
+    if (file) setPreviewImage(URL.createObjectURL(file));
+    else setPreviewImage(null);
+  };
+
+  // Add product
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price) {
       alert("Name & Price are required!");
       return;
     }
     try {
-      await addProduct(newProduct); // context handles fetch & state
-      setNewProduct({ name: "", price: "", image: "", description: "", file: null });
+      const addedProduct = await addProduct(newProduct); // context returns the added product
+
+      // Reset form
+      setNewProduct({ name: "", price: "", description: "", image: "", file: null });
+      setPreviewImage(null);
+
+      // Scroll or highlight new product if needed
+      // (The ProductContext already adds it to the products list)
     } catch (err) {
       console.error("Error adding product:", err);
     }
@@ -57,20 +73,33 @@ export default function AdminDashboard() {
           value={newProduct.price}
           onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
         />
-        <input
-          placeholder="Image URL"
-          value={newProduct.image}
-          onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-        />
-        <input
-          type="file"
-          onChange={(e) => setNewProduct({ ...newProduct, file: e.target.files[0] })}
-        />
         <textarea
           placeholder="Description"
           value={newProduct.description}
           onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
         ></textarea>
+
+        {/* Image URL */}
+        <input
+          placeholder="Image URL (optional)"
+          value={newProduct.image}
+          onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+        />
+
+        {/* File upload */}
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+
+        {/* Preview */}
+        {previewImage && (
+          <div className={styles.preview}>
+            <img
+              src={previewImage}
+              alt="Preview"
+              style={{ width: "150px", height: "150px", objectFit: "cover" }}
+            />
+          </div>
+        )}
+
         <button onClick={handleAddProduct}>Add Product</button>
       </section>
 
@@ -90,7 +119,15 @@ export default function AdminDashboard() {
                 onClick={() => navigate(`/admin/product/${item.id}`)}
                 style={{ cursor: "pointer", position: "relative" }}
               >
-                <img src={item.image} alt={item.name} className={styles.image} />
+                <img
+                  src={
+                    item.image.startsWith("/uploads/")
+                      ? `http://localhost:5000${item.image}`
+                      : item.image || "/placeholder.png"
+                  }
+                  alt={item.name}
+                  className={styles.image}
+                />
                 <h3>{item.name}</h3>
                 <p>${item.price}</p>
                 <button

@@ -4,14 +4,10 @@ import { CartContext } from "../context/CartContext";
 import styles from "./CartPage.module.css";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, clearCart } = useContext(CartContext);
+  const { cartItems, removeFromCart, getTotalPrice, checkout } = useContext(CartContext);
   const navigate = useNavigate();
 
-  // Calculate total price
-  const getTotalPrice = () =>
-    cartItems.reduce((sum, item) => sum + Number(item.price), 0);
-
-  // Checkout function
+  // Handle checkout
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
       alert("Your cart is empty!");
@@ -22,7 +18,7 @@ export default function CartPage() {
       const totalPrice = getTotalPrice();
 
       // Send order to backend
-      const res = await fetch("http://localhost:5000/orders", {
+      const res = await fetch("http://localhost:5000/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -39,9 +35,9 @@ export default function CartPage() {
       console.log("Order placed:", order);
 
       // Clear cart
-      clearCart();
+      checkout();
 
-      // Navigate to OrderPlaced page
+      // Navigate to order confirmation page
       navigate("/order-placed", {
         state: { orderId: order.id, totalPrice, items: order.items },
       });
@@ -62,11 +58,18 @@ export default function CartPage() {
           <div className={styles.cartList}>
             {cartItems.map((item) => (
               <div key={item.id} className={styles.cartItem}>
-                <img src={item.image} alt={item.name} className={styles.cartImage} />
+                {/* Show product image */}
+                <img
+                  src={item.image.startsWith("/uploads") ? `http://localhost:5000${item.image}` : item.image}
+                  alt={item.name}
+                  className={styles.cartImage}
+                />
+
                 <div className={styles.details}>
                   <h3>{item.name}</h3>
                   <p>${item.price}</p>
                 </div>
+
                 <button
                   className={styles.removeBtn}
                   onClick={() => removeFromCart(item.id)}

@@ -13,10 +13,21 @@ export default function ProductDetail() {
 
   if (!product) return <h2 className={styles.notFound}>Product not found</h2>;
 
+  // Fix image path: use full URL for local uploads
+  const imageUrl = product.image
+    ? product.image.startsWith("http")
+      ? product.image
+      : `http://localhost:5000${product.image}`
+    : "https://via.placeholder.com/400";
+
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <img src={product.image || "https://via.placeholder.com/400"} alt={product.name} className={styles.image} />
+        <img
+          src={imageUrl}
+          alt={product.name}
+          className={styles.image}
+        />
         <div className={styles.info}>
           <h1>{product.name}</h1>
           <p>${product.price}</p>
