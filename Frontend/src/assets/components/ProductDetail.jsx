@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { ProductContext } from "../context/ProductContext";
 import { CartContext } from "../context/CartContext";
@@ -8,33 +8,55 @@ export default function ProductDetail() {
   const { id } = useParams();
   const { products } = useContext(ProductContext);
   const { addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
 
   const product = products.find(p => p.id === Number(id));
 
   if (!product) return <h2 className={styles.notFound}>Product not found</h2>;
 
-  // Fix image path: use full URL for local uploads
   const imageUrl = product.image
     ? product.image.startsWith("http")
       ? product.image
       : `http://localhost:5000${product.image}`
     : "https://via.placeholder.com/400";
 
+  const handleBack = () => {
+    navigate("/dashboard");
+  };
+
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <img
-          src={imageUrl}
-          alt={product.name}
-          className={styles.image}
-        />
-        <div className={styles.info}>
+    <main className={styles.page}>
+      <div className={styles.container}>
+        <div className={styles.card}>
+          {/* Product Name */}
           <h1>{product.name}</h1>
-          <p>${product.price}</p>
-          <p>{product.description || "No description available."}</p>
-          <button onClick={() => addToCart(product)}>Add to Cart</button>
+
+          {/* Product Image */}
+          <img src={imageUrl} alt={product.name} className={styles.image} />
+
+          {/* Price */}
+          <p className={styles.price}>${product.price}</p>
+
+          {/* Description */}
+          <p className={styles.description}>
+            {product.description || "No description available."}
+          </p>
+
+          {/* Buttons */}
+          <div className={styles.buttonGroup}>
+            <button
+              className={styles.addBtn}
+              onClick={() => addToCart(product)}
+            >
+              Add to Cart
+            </button>
+
+            <button className={styles.backBtn} onClick={handleBack}>
+              Back
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

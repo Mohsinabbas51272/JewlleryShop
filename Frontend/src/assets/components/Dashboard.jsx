@@ -11,16 +11,18 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const getImageSrc = (image) => {
-    if (!image) return "/placeholder.png"; // fallback if no image
-    if (image.startsWith("/uploads/")) return `http://localhost:5000${image}`; // uploaded file
-    return image; // URL from user
+    if (!image) return "/placeholder.png";
+    if (image.startsWith("/uploads/")) return `http://localhost:5000${image}`;
+    return image;
   };
 
   return (
-    <main>
+    <div className={styles.pageWrapper}>
+      {/* Header always top */}
       <Header />
 
-      <div className={styles.pageContainer}>
+      {/* Page Body Wrapper */}
+      <main className={styles.contentBox}>
         <h1 className={styles.title}>Our Items</h1>
 
         {loading ? (
@@ -47,7 +49,7 @@ export default function Dashboard() {
                 <button
                   className={styles.btn}
                   onClick={(e) => {
-                    e.stopPropagation(); // stops navigation when clicking Add to Cart
+                    e.stopPropagation();
                     addToCart(item);
                   }}
                 >
@@ -57,7 +59,7 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

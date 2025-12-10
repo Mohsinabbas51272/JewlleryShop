@@ -4,7 +4,8 @@ import { CartContext } from "../context/CartContext";
 import styles from "./CartPage.module.css";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, getTotalPrice, checkout } = useContext(CartContext);
+  const { cartItems, removeFromCart, getTotalPrice, checkout, updateQuantity } =
+    useContext(CartContext);
   const navigate = useNavigate();
 
   // Handle checkout
@@ -17,7 +18,6 @@ export default function CartPage() {
     try {
       const totalPrice = getTotalPrice();
 
-      // Send order to backend
       const res = await fetch("http://localhost:5000/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,10 +34,8 @@ export default function CartPage() {
       const order = await res.json();
       console.log("Order placed:", order);
 
-      // Clear cart
       checkout();
 
-      // Navigate to order confirmation page
       navigate("/order-placed", {
         state: { orderId: order.id, totalPrice, items: order.items },
       });
@@ -58,9 +56,13 @@ export default function CartPage() {
           <div className={styles.cartList}>
             {cartItems.map((item) => (
               <div key={item.id} className={styles.cartItem}>
-                {/* Show product image */}
+                {/* Product Image */}
                 <img
-                  src={item.image.startsWith("/uploads") ? `http://localhost:5000${item.image}` : item.image}
+                  src={
+                    item.image.startsWith("/uploads")
+                      ? `http://localhost:5000${item.image}`
+                      : item.image
+                  }
                   alt={item.name}
                   className={styles.cartImage}
                 />
@@ -68,6 +70,21 @@ export default function CartPage() {
                 <div className={styles.details}>
                   <h3>{item.name}</h3>
                   <p>${item.price}</p>
+                </div>
+
+                {/* Quantity controls */}
+                <div className={styles.quantity}>
+                  <button
+                    onClick={() =>
+                      updateQuantity(item.id, item.quantity > 1 ? item.quantity - 1 : 1)
+                    }
+                  >
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                    +
+                  </button>
                 </div>
 
                 <button

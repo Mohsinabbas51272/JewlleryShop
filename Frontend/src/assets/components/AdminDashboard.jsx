@@ -6,7 +6,7 @@ import styles from "./AdminDashboard.module.css";
 
 export default function AdminDashboard() {
   const { products, loading, addProduct, deleteProduct } = useContext(ProductContext);
-  const { orders, updateOrderStatus } = useContext(OrderContext);
+  const { orders, updateOrderStatus, deleteOrder } = useContext(OrderContext);
   const navigate = useNavigate();
 
   const [newProduct, setNewProduct] = useState({
@@ -23,8 +23,7 @@ export default function AdminDashboard() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setNewProduct({ ...newProduct, file });
-    if (file) setPreviewImage(URL.createObjectURL(file));
-    else setPreviewImage(null);
+    setPreviewImage(file ? URL.createObjectURL(file) : null);
   };
 
   // Add product
@@ -34,14 +33,11 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      const addedProduct = await addProduct(newProduct); // context returns the added product
+      await addProduct(newProduct);
 
       // Reset form
       setNewProduct({ name: "", price: "", description: "", image: "", file: null });
       setPreviewImage(null);
-
-      // Scroll or highlight new product if needed
-      // (The ProductContext already adds it to the products list)
     } catch (err) {
       console.error("Error adding product:", err);
     }
@@ -78,18 +74,13 @@ export default function AdminDashboard() {
           value={newProduct.description}
           onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
         ></textarea>
-
-        {/* Image URL */}
         <input
           placeholder="Image URL (optional)"
           value={newProduct.image}
           onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
         />
-
-        {/* File upload */}
         <input type="file" accept="image/*" onChange={handleFileChange} />
 
-        {/* Preview */}
         {previewImage && (
           <div className={styles.preview}>
             <img
@@ -100,7 +91,9 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <button onClick={handleAddProduct}>Add Product</button>
+        <button className={styles.addBtn} onClick={handleAddProduct}>
+          Add Product
+        </button>
       </section>
 
       {/* Products List */}
@@ -141,56 +134,79 @@ export default function AdminDashboard() {
           </div>
         )}
       </section>
+{/* Orders Section */}
+<section className={styles.orders}>
+  <h2>Orders</h2>
+  {orders.length === 0 ? (
+    <p>No orders yet.</p>
+  ) : (
+    <table>
+      <thead>
+        <tr>
+          <th>Products</th>
+          <th>Order ID</th>
+          <th>Total</th>
+          <th>Change Status</th>
+          <th>Order Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orders.map((order) => {
+          let productNames = "No items";
+          if (order.items) {
+            try {
+              const productsInOrder = JSON.parse(order.items);
+              productNames = productsInOrder
+                .map((p) =>
+                  p.quantity ? `${p.name} x ${ p.quantity}` : p.name
+                )
+                .join(", ");
+            } catch {
+              productNames = "Invalid items";
+            }
+          }
 
-      {/* Orders Section */}
-      <section className={styles.orders}>
-        <h2>Orders</h2>
-        {orders.length === 0 ? (
-          <p>No orders yet.</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Products</th>
-                <th>Order ID</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Change Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => {
-                let productNames = "No items";
-                if (order.items) {
-                  try {
-                    const productsInOrder = JSON.parse(order.items);
-                    productNames = productsInOrder
-                      .map((p) => (p.quantity ? `${p.name} x${p.quantity}` : p.name))
-                      .join(", ");
-                  } catch {
-                    productNames = "Invalid items";
-                  }
-                }
-                return (
-                  <tr key={order.id}>
-                    <td>{productNames}</td>
-                    <td>{order.id}</td>
-                    <td>${order.total}</td>
-                    <td>{order.status}</td>
-                    <td>
-                      {order.status === "Pending" && (
-                        <button onClick={() => updateOrderStatus(order.id, "Delivered")}>
-                          Mark Delivered
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </section>
+          return (
+            <tr key={order.id}>
+              <td>{productNames}</td>
+              <td>{order.id}</td>
+              <td>${order.total}</td>
+
+              {/* Mark Delivered */}
+              <td>
+                {order.status === "Pending" ? (
+                  <button
+                    onClick={() => updateOrderStatus(order.id, "Delivered")}
+                    className={styles.markBtn}
+                  >
+                    Mark Delivered
+                  </button>
+                ) : (
+                  "Delivered"
+                )}
+              </td>
+
+              {/* Delete Order */}
+              <td>
+                <button
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this order?")) {
+                      deleteOrder(order.id);
+                    }
+                  }}
+                  className={styles.deleteBtn}
+                >
+                  Delete Order
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  )}
+</section>
+
     </div>
   );
 }

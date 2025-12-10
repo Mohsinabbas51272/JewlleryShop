@@ -6,52 +6,58 @@
   margin: 0 auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  background-color: #b9a5a5;
+  color: #f2fcfd;
+  background-color: #f2fcfd;
 }
 
 /* Headings */
 h1 {
   text-align: center;
   margin-bottom: 30px;
-  color: #4f46e5;
+  color: #4cad2e;
 }
 
 h2 {
   margin-bottom: 15px;
-  color: #333;
+  color: #156949;
 }
 
 /* Add Product Form */
 .addProduct {
-  background-color: #fff;
+  background-color: #d1e7e0;
   padding: 20px;
-  margin-bottom: 40px;
+  margin: 0 auto 40px auto; /* center horizontally */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  width: 60%;        /* form ko chota kar diya */
+  max-width: 600px;  /* max size */
+  min-width: 300px;  /* responsive */
 }
-
 .addProduct input,
 .addProduct textarea {
   width: 100%;
+  color: black;
   padding: 10px 12px;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
+  border: 1px solid #6bb7ff;       /* NEW border color */
   border-radius: 8px;
   font-size: 1rem;
+  
   box-sizing: border-box;
-  transition: border-color 0.3s;
+  background-color: #eceff3;       /* NEW background color */
+  transition: border-color 0.3s, background-color 0.3s;
 }
 
 .addProduct input:focus,
 .addProduct textarea:focus {
-  border-color: #4f46e5;
+  border-color: #669e7f;           /* NEW focus border color */
+  background-color: #cacfd6;       /* Slight change on focus */
   outline: none;
 }
 
 .addProduct button {
   padding: 12px 20px;
-  background-color: #4f46e5;
+  background-color: #387965;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -76,7 +82,7 @@ h2 {
 }
 
 .card {
-  background-color: #fff;
+  background-color: #afe2ca;
   padding: 15px;
   border-radius: 12px;
   text-align: center;
@@ -85,13 +91,13 @@ h2 {
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-15px);
   box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
 .image {
   width: 100%;
-  height: 150px;
+  height: 200px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -111,8 +117,9 @@ h2 {
 
 /* Orders Table */
 .orders {
-  background-color: #fff;
+  background-color: #b0ebd4;
   padding: 20px;
+  color: black;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
@@ -124,7 +131,7 @@ table {
 }
 
 thead {
-  background-color: #4f46e5;
+  background-color: #6062d4;
   color: white;
 }
 
@@ -135,7 +142,7 @@ th, td {
 }
 
 tr:hover {
-  background-color: #f1f1f1;
+  background-color: #c05e5e;
 }
 
 button {

@@ -34,47 +34,41 @@ export const OrderProvider = ({ children }) => {
   useEffect(() => {
     fetchOrders();
   }, []);
+// Update order
+const updateOrderStatus = async (id, newStatus) => {
+  const confirm = await Swal.fire({
+    title: "Are you sure?",
+    text: `Change status to ${newStatus}?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes",
+  });
 
-  // Update order
-  const updateOrderStatus = async (id, newStatus) => {
-    const confirm = await Swal.fire({
-      title: "Are you sure?",
-      text:
-        newStatus === "Delivered"
-          ? "This will mark the order as delivered and remove it."
-          : `Change status to ${newStatus}?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
+  if (!confirm.isConfirmed) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/orders/${Number(id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
     });
 
-    if (!confirm.isConfirmed) return;
+    if (!res.ok) throw new Error("Failed to update order");
 
-    try {
-      const res = await fetch(`${BASE_URL}/orders/${Number(id)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
+    // Just update the status in state
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === Number(id) ? { ...o, status: newStatus } : o
+      )
+    );
 
-      if (!res.ok) throw new Error("Failed to update order");
+    toast.success(`Order updated to ${newStatus}`);
+  } catch (err) {
+    console.error(err);
+    toast.error("Error updating order");
+  }
+};
 
-      if (newStatus === "Delivered") {
-        await deleteOrder(id);
-        toast.success("Order delivered & removed!");
-      } else {
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.id === Number(id) ? { ...o, status: newStatus } : o
-          )
-        );
-        toast.success(`Order updated to ${newStatus}`);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Error updating order");
-    }
-  };
 
   // Delete order
   const deleteOrder = async (id) => {
