@@ -9,7 +9,7 @@ import CartPage from "./assets/components/CartPage";
 import OrderPlaced from "./assets/components/OrderPlaced";
 import AdminDashboard from "./assets/components/AdminDashboard";
 //import AdminProductDetails from "./assets/components/AdminProductDetails";
-import AdminProductDetails from './assets/components/AdminProductDetails'
+import AdminProductDetails from "./assets/components/AdminProductDetails";
 function App() {
   return (
     <BrowserRouter>
@@ -19,12 +19,11 @@ function App() {
         <Route path="/signUp" element={<SignUp />} />
         <Route path="/logIn" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
-<Route path="/product/:id" element={<ProductDetail />} />
-<Route path="/cart" element={<CartPage />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route path="/order-placed" element={<OrderPlaced />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin/product/:id" element={<AdminProductDetails />} />
-
       </Routes>
     </BrowserRouter>
   );
